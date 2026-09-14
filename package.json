@@ -1,0 +1,18 @@
+{
+  "name": "pragati",
+  "version": "1.0.0",
+  "description": "PRAGATI — Programming Skill Assessment & Progress Management Platform",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "start:server": "npm run start --workspace=server",
+    "start:client": "npm run preview --workspace=client"
+  }
+}

@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  HOD
+  FACULTY
+  STUDENT
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum SubmissionStatus {
+  PENDING
+  COMPLETED
+  ERROR
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  studentProfile StudentProfile?
+  facultyProfile FacultyProfile?
+}
+
+model StudentProfile {
+  id         String @id @default(uuid())
+  userId     String @unique
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rollNumber String @unique
+  batch      String
+  semester   Int
+}
+
+model FacultyProfile {
+  id         String @id @default(uuid())
+  userId     String @unique
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId String @unique
+  department String
+}
+
+model Question {
+  id                  String             @id @default(uuid())
+  title               String
+  description         String
+  difficulty          String
+  languageConstraints String[] // e.g., ["C", "C++", "Java", "Python"]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  
+  // Relations
+  facultyId           String // The faculty who created it
+  approvals           QuestionApproval[]
+  testCases           TestCase[]
+  submissions         Submission[]
+  rubrics             Rubric[]
+}
+
+model QuestionApproval {
+  id         String         @id @default(uuid())
+  questionId String
+  question   Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  hodId      String // The HOD who reviewed it
+  status     ApprovalStatus @default(PENDING)
+  comments   String?
+  reviewedAt DateTime       @default(now())
+}
+
+model TestCase {
+  id             String   @id @default(uuid())
+  questionId     String
+  question       Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  input          String
+  expectedOutput String
+  isHidden       Boolean  @default(false)
+}
+
+model Rubric {
+  id          String   @id @default(uuid())
+  questionId  String
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  criteria    String
+  maxScore    Float
+}
+
+model Submission {
+  id           String           @id @default(uuid())
+  studentId    String // Relates to User (Student)
+  questionId   String
+  question     Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  code         String
+  language     String
+  status       SubmissionStatus @default(PENDING)
+  submittedAt  DateTime         @default(now())
+  
+  evaluation   Evaluation?
+  violations   Violation[]
+}
+
+model Evaluation {
+  id            String     @id @default(uuid())
+  submissionId  String     @unique
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  score         Float
+  feedback      String?
+  executionTime Float? // in milliseconds
+  memoryUsed    Float? // in megabytes
+  evaluatedAt   DateTime   @default(now())
+}
+
+model Violation {
+  id           String     @id @default(uuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  type         String // e.g., "TAB_SWITCH", "COPY_PASTE"
+  description  String?
+  timestamp    DateTime   @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String // Who performed the action
+  action    String // e.g., "USER_CREATED", "SETTINGS_UPDATED"
+  details   String?
+  timestamp DateTime @default(now())
+}
