@@ -33,3 +33,22 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     next(err);
   }
 };
+
+export const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // In a stateless JWT setup, logout is mostly handled client-side by deleting the token.
+    // If we wanted to blacklist tokens, we would do it here.
+    return res.status(200).json({ message: 'Logged out successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const me = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // req.user is set by the requireAuth middleware
+    return res.status(200).json({ user: req.user });
+  } catch (err) {
+    next(err);
+  }
+};

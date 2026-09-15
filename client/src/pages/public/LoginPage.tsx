@@ -1,18 +1,29 @@
-
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ROLE } from 'shared';
+import { useAuth } from '../../contexts/AuthContext';
 import { Lock } from 'lucide-react';
 
-interface LoginPageProps {
-  onLogin: (role: ROLE) => void;
-}
-
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
+const LoginPage = () => {
   const navigate = useNavigate();
+  const { login, error } = useAuth();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (role: ROLE) => {
-    onLogin(role);
-    navigate(`/${role.toLowerCase()}`);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      // The redirect is handled in AppRoutes.tsx when user state changes, 
+      // but we can also forcefully navigate if we wanted to extract the role
+      // For now, let AppRoutes handle the redirection based on user.role
+    } catch (err) {
+      console.error('Login failed', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -23,39 +34,61 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <Lock className="h-6 w-6 text-primary" />
           </div>
           <h2 className="mt-2 text-3xl font-extrabold text-gray-900">Sign in to PRAGATI</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            For development, select a role to mock login
-          </p>
         </div>
 
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={() => handleLogin(ROLE.ADMIN)}
-            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
-          >
-            Login as Admin
-          </button>
-          
-          <button
-            onClick={() => handleLogin(ROLE.HOD)}
-            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-700"
-          >
-            Login as HOD
-          </button>
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm text-center">
+            {error}
+          </div>
+        )}
 
-          <button
-            onClick={() => handleLogin(ROLE.FACULTY)}
-            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600"
-          >
-            Login as Faculty
-          </button>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <button
-            onClick={() => handleLogin(ROLE.STUDENT)}
-            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-          >
-            Login as Student
-          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
+        </form>
+        
+        <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500 text-center space-y-2">
+          <p>Demo accounts:</p>
+          <p>admin@pragati.edu / admin123</p>
+          <p>hod@pragati.edu / admin123</p>
         </div>
       </div>
     </div>

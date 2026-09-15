@@ -13,6 +13,10 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
+    if (user.status !== 'ACTIVE') {
+      throw new Error('Account is inactive. Please contact administrator.');
+    }
+
     const isValid = await bcrypt.compare(passwordString, user.passwordHash);
     if (!isValid) {
       throw new Error('Invalid credentials');
