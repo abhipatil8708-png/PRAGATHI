@@ -22,6 +22,12 @@ import FacultyQuestions from '../pages/faculty/FacultyQuestions';
 import CreateQuestion from '../pages/faculty/CreateQuestion';
 import QuestionDetails from '../pages/faculty/QuestionDetails';
 import StudentDashboard from '../pages/student/StudentDashboard';
+import StudentQuestions from '../pages/student/StudentQuestions';
+import StudentQuestionDetails from '../pages/student/StudentQuestionDetails';
+import CodingWorkspace from '../pages/student/CodingWorkspace';
+import StudentProgress from '../pages/student/StudentProgress';
+import StudentSubmissions from '../pages/student/StudentSubmissions';
+import StudentProfile from '../pages/student/StudentProfile';
 
 const AppRoutesInner = () => {
   const { user, logout, isLoading } = useAuth();
@@ -69,7 +75,17 @@ const AppRoutesInner = () => {
         {/* Student Routes */}
         <Route element={<RoleRoute user={user} allowedRoles={[ROLE.STUDENT]} />}>
           <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student/questions" element={<StudentQuestions />} />
+          <Route path="/student/questions/:id" element={<StudentQuestionDetails />} />
+          <Route path="/student/progress" element={<StudentProgress />} />
+          <Route path="/student/submissions" element={<StudentSubmissions />} />
+          <Route path="/student/profile" element={<StudentProfile />} />
         </Route>
+      </Route>
+
+      {/* Full Screen Workspace Route (No Sidebar) */}
+      <Route element={<RoleRoute user={user} allowedRoles={[ROLE.STUDENT]} />}>
+        <Route path="/student/workspace/:id" element={<CodingWorkspace />} />
       </Route>
 
       {/* 404 Catch All */}

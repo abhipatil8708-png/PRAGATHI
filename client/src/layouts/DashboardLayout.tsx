@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { ROLE } from 'shared';
-import { LogOut, User as UserIcon, Settings, Home, Users, UserCheck, Shield, FileQuestion } from 'lucide-react';
+import { LogOut, User as UserIcon, Settings, Home, Users, UserCheck, Shield, FileQuestion, TrendingUp, History } from 'lucide-react';
 
 interface DashboardLayoutProps {
   user: { role: ROLE; name: string } | null;
@@ -43,6 +43,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ user, onLogout }) => 
       case ROLE.STUDENT:
         return [
           { name: 'Dashboard', path: '/student', icon: Home },
+          { name: 'Questions', path: '/student/questions', icon: FileQuestion },
+          { name: 'Progress', path: '/student/progress', icon: TrendingUp },
+          { name: 'Submission History', path: '/student/submissions', icon: History },
+          { name: 'Profile', path: '/student/profile', icon: UserIcon },
         ];
       default:
         return [];

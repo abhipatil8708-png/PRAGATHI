@@ -50,12 +50,13 @@ model User {
 }
 
 model StudentProfile {
-  id         String @id @default(uuid())
-  userId     String @unique
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rollNumber String @unique
-  batch      String
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usn        String  @unique // replaces rollNumber
+  branch     String  // e.g. "Computer Science"
   semester   Int
+  section    String? // e.g. "A"
 }
 
 model FacultyProfile {
