@@ -6,6 +6,14 @@ import { ApprovalStatus } from '@prisma/client';
 const approvalSchema = z.object({
   status: z.enum(['APPROVED', 'REJECTED', 'CHANGES_REQUESTED']),
   comments: z.string().optional().default(''),
+}).refine((data) => {
+  if ((data.status === 'REJECTED' || data.status === 'CHANGES_REQUESTED') && (!data.comments || data.comments.trim() === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Comments are required when rejecting or requesting changes.",
+  path: ["comments"],
 });
 
 export const getDashboardStats = async (req: Request, res: Response, next: NextFunction) => {
@@ -30,7 +38,7 @@ export const updateQuestionApproval = async (req: Request, res: Response, next: 
   try {
     const { approvalId } = req.params;
     const { status, comments } = approvalSchema.parse(req.body);
-    const result = await HodService.updateQuestionApproval(approvalId, status as ApprovalStatus, comments);
+    const result = await HodService.updateQuestionApproval(approvalId, req.user!.id, status as ApprovalStatus, comments);
     return res.status(200).json(result);
   } catch (err) {
     next(err);

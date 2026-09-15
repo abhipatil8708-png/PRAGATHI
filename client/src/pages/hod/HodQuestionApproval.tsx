@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiFetch } from '../../../services/api';
-import { Check, X, AlertCircle, MessageSquare } from 'lucide-react';
+import { Check, X, AlertCircle, MessageSquare, Clock } from 'lucide-react';
 
 const HodQuestionApproval = () => {
   const [questions, setQuestions] = useState<any[]>([]);
@@ -31,7 +31,7 @@ const HodQuestionApproval = () => {
   const handleAction = async (status: string) => {
     if (!selectedQuestion) return;
     
-    if (status !== 'APPROVED' && !comment.trim()) {
+    if ((status === 'REJECTED' || status === 'CHANGES_REQUESTED') && !comment.trim()) {
       alert('Please provide a comment for this action.');
       return;
     }
@@ -67,9 +67,12 @@ const HodQuestionApproval = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* List Section */}
-        <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[600px]">
-          <div className="p-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="font-medium text-gray-900">Pending Review ({questions.length})</h3>
+        <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[700px]">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+            <h3 className="font-medium text-gray-900 flex items-center gap-2">
+              <Clock className="w-4 h-4" /> Pending Review
+            </h3>
+            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-bold">{questions.length}</span>
           </div>
           
           <div className="flex-1 overflow-y-auto">
@@ -90,9 +93,14 @@ const HodQuestionApproval = () => {
                     onClick={() => { setSelectedQuestion(q); setComment(''); }}
                   >
                     <p className="font-medium text-gray-900 line-clamp-1">{q.question.title}</p>
-                    <div className="mt-1 flex justify-between text-xs text-gray-500">
-                      <span>{q.question.difficulty}</span>
-                      <span>{new Date(q.question.createdAt).toLocaleDateString()}</span>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-1">{q.question.topic}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                        {q.question.difficulty}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(q.question.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </li>
                 ))}
@@ -102,40 +110,69 @@ const HodQuestionApproval = () => {
         </div>
 
         {/* Details Section */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 h-[600px] flex flex-col">
+        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 h-[700px] flex flex-col">
           {selectedQuestion ? (
             <>
               <div className="p-6 border-b border-gray-200 flex-1 overflow-y-auto">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">{selectedQuestion.question.title}</h3>
-                  <span className="px-2 py-1 text-xs font-semibold rounded bg-gray-100 text-gray-800">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{selectedQuestion.question.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1">Topic: {selectedQuestion.question.topic}</p>
+                  </div>
+                  <span className="px-3 py-1 text-sm font-semibold rounded bg-gray-100 text-gray-800">
                     {selectedQuestion.question.difficulty}
                   </span>
                 </div>
                 
-                <div className="prose prose-sm max-w-none text-gray-600 mb-8">
-                  <p>In a fully implemented system, the full question description, test cases, and constraints will be displayed here for HOD review.</p>
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-sm font-semibold text-gray-900 border-b pb-1 mb-2">Problem Statement</h4>
+                    <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 p-4 rounded-md font-mono whitespace-pre-wrap">
+                      {selectedQuestion.question.problemStatement || selectedQuestion.question.description || 'No description provided.'}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Marks</h4>
+                      <p className="text-sm text-gray-700">{selectedQuestion.question.marks || '-'}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Time Limit</h4>
+                      <p className="text-sm text-gray-700">{selectedQuestion.question.timeLimit ? `${selectedQuestion.question.timeLimit}s` : '-'}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-1">Supported Languages</h4>
+                      <div className="flex gap-2">
+                        {selectedQuestion.question.supportedLanguages?.map((lang: string) => (
+                          <span key={lang} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">{lang}</span>
+                        )) || <span className="text-sm text-gray-500">Not specified</span>}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* For brevity, we don't render all examples in this list view, but in a real app we would. */}
                 </div>
                 
                 <div className="mt-8 space-y-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    Review Comments
+                    Review Comments <span className="text-red-500">* Required for Reject/Changes</span>
                   </label>
                   <textarea
                     rows={4}
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm border p-3"
-                    placeholder="Add feedback for the faculty member..."
+                    placeholder="Add specific feedback for the faculty member..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                   />
                 </div>
               </div>
               
-              <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+              <div className="p-4 bg-gray-50 border-t border-gray-200 flex flex-wrap justify-end gap-3">
                 <button
                   disabled={actionLoading}
                   onClick={() => handleAction('CHANGES_REQUESTED')}
-                  className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  className="px-4 py-2 border border-orange-300 shadow-sm text-sm font-medium rounded-md text-orange-700 bg-orange-50 hover:bg-orange-100 disabled:opacity-50"
                 >
                   Request Changes
                 </button>

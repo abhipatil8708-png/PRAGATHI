@@ -30,9 +30,12 @@ export class HodService {
         question: {
           select: {
             title: true,
+            topic: true,
             difficulty: true,
             createdAt: true,
             facultyId: true,
+            supportedLanguages: true,
+            marks: true,
           }
         }
       },
@@ -40,10 +43,19 @@ export class HodService {
     });
   }
 
-  static async updateQuestionApproval(approvalId: string, status: any, comments: string) {
-    return prisma.questionApproval.update({
-      where: { id: approvalId },
-      data: { status, comments, reviewedAt: new Date() },
+  static async updateQuestionApproval(approvalId: string, hodId: string, status: any, comments: string) {
+    return prisma.$transaction(async (tx) => {
+      const approval = await tx.questionApproval.update({
+        where: { id: approvalId },
+        data: { status, comments, hodId, reviewedAt: new Date() },
+      });
+
+      await tx.question.update({
+        where: { id: approval.questionId },
+        data: { status },
+      });
+
+      return approval;
     });
   }
 }

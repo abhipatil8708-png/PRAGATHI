@@ -38,6 +38,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ user, onLogout }) => 
       case ROLE.FACULTY:
         return [
           { name: 'Dashboard', path: '/faculty', icon: Home },
+          { name: 'Questions', path: '/faculty/questions', icon: FileQuestion },
         ];
       case ROLE.STUDENT:
         return [

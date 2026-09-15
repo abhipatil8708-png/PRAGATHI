@@ -18,6 +18,9 @@ import AdminHOD from '../pages/admin/AdminHOD';
 import HodDashboard from '../pages/hod/HodDashboard';
 import HodQuestionApproval from '../pages/hod/HodQuestionApproval';
 import FacultyDashboard from '../pages/faculty/FacultyDashboard';
+import FacultyQuestions from '../pages/faculty/FacultyQuestions';
+import CreateQuestion from '../pages/faculty/CreateQuestion';
+import QuestionDetails from '../pages/faculty/QuestionDetails';
 import StudentDashboard from '../pages/student/StudentDashboard';
 
 const AppRoutesInner = () => {
@@ -58,6 +61,9 @@ const AppRoutesInner = () => {
         {/* Faculty Routes */}
         <Route element={<RoleRoute user={user} allowedRoles={[ROLE.FACULTY]} />}>
           <Route path="/faculty" element={<FacultyDashboard />} />
+          <Route path="/faculty/questions" element={<FacultyQuestions />} />
+          <Route path="/faculty/questions/create" element={<CreateQuestion />} />
+          <Route path="/faculty/questions/:id" element={<QuestionDetails />} />
         </Route>
 
         {/* Student Routes */}
